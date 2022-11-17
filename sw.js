@@ -14,7 +14,7 @@ self.addEventListener('install', function (event) {
       'https://introweb.tech/assets/json/3_moms-cornbread-stuffing.json',
       'https://introweb.tech/assets/json/4_50-indulgent-thanksgiving-side-dishes-for-any-holiday-gathering.json',
       'https://introweb.tech/assets/json/5_healthy-thanksgiving-recipe-crockpot-turkey-breast.json',
-      'https://introweb.tech/assets/json/6_one-pot-thanksgiving-dinner.json',]);
+      'https://introweb.tech/assets/json/6_one-pot-thanksgiving-dinner.json']);
     })
   );
 });
@@ -40,22 +40,19 @@ self.addEventListener('fetch', function (event) {
   // B7. TODO - Respond to the event by opening the cache using the name we gave
   //            above (CACHE_NAME)
   event.respondWith(caches.open(CACHE_NAME).then(async (cache) => {
-    // Go to the cache first
-    return cache.match(event.request.url).then((cachedResponse) => {
-      // Return a cached response if we have one
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-  // B8. TODO - If the request is in the cache, return with the cached version.
-  //            Otherwise fetch the resource, add it to the cache, and return
-  //            network response.
-    return fetch(event.request).then((fetchedResponse) => {
-      // Add the network response to the cache for later visits
-      cache.put(event.request, fetchedResponse.clone());
-
-      // Return the network response
-      return fetchedResponse;
-    });
+    // B8. TODO - If the request is in the cache, return with the cached version.
+    //            Otherwise fetch the resource, add it to the cache, and return
+    //            network response.
+    return cache.match(event.request).then((cachedResponse) => {
+      return cachedResponse || fetch(event.request).then((fetchedResponse) => {
+        // Add the network response to the cache for future visits.
+        // Note: we need to make a copy of the response to save it in
+        // the cache and use the original as the request response.
+        cache.put(event.request, fetchedResponse.clone());
+  
+        // Return the network response
+        return fetchedResponse;
+      });
     });
   }));
 });
